@@ -1,3 +1,4 @@
+import { staffAuthHeaders } from "@/api/db/auth.ts";
 import React from "react";
 import { toast } from "sonner";
 import { getDefaultStore } from "jotai";
@@ -312,7 +313,7 @@ export async function dispatchPrint<Payload = any>(
   try {
     const res = await fetch(url, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...staffAuthHeaders() },
       body: JSON.stringify(body),
     });
 

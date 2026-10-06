@@ -207,6 +207,14 @@ VITE_PRINT_SERVER_URL=https://192.168.1.50:3132
 
 The root [`docker-compose.yml`](../docker-compose.yml) and [`Dockerfile`](Dockerfile) (HTTP dev service) are unchanged.
 
+## Authentication
+
+`POST /print` and `POST /print/preview` only accept requests from signed-in POS
+staff: the app sends its session token as `Authorization: Bearer <token>` and the
+server checks it with SurrealDB. Set `POS_AUTH_DB_URL` to the SurrealDB the POS
+uses (e.g. `ws://192.168.1.10:8000`). Only on an isolated machine you can set
+`POS_AUTH_DISABLED=true` to skip the check.
+
 ## Preview (no printer needed)
 
 - **GET http://localhost:3132/print/preview** — Tool page: choose print type, paste JSON (same shape as `/print`), click Preview. Opens the receipt layout in a new tab.

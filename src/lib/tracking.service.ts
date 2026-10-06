@@ -1,3 +1,4 @@
+import { staffAuthHeaders } from "@/api/db/auth.ts";
 import { Tracking } from "@/api/model/tracking.ts";
 
 export const TRACKING_SERVER_URL =
@@ -112,7 +113,7 @@ export async function postTracking(payload: TrackingRequest): Promise<void> {
     const url = `${TRACKING_SERVER_URL.replace(/\/$/, "")}/tracking`;
     const response = await fetch(url, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", ...staffAuthHeaders() },
       body: JSON.stringify(normalizeTrackingPayload(payload)),
     });
 

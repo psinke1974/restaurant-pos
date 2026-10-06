@@ -100,3 +100,12 @@ export const verifyCredentials = async <T = any>(
     void client.close();
   }
 };
+
+/**
+ * Headers for calls to our own services (print, payment, tracking, AI). They
+ * check the staff session token with the database before doing anything.
+ */
+export const staffAuthHeaders = (): Record<string, string> => {
+  const token = readStoredToken();
+  return token ? { Authorization: `Bearer ${token}` } : {};
+};

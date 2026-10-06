@@ -4,6 +4,7 @@ const express = require('express');
 const cors = require('cors');
 const { handlePrint } = require('./print-handler');
 const { renderPreview } = require('./lib/preview');
+const { requireStaff } = require('./lib/require-staff');
 
 const app = express();
 const PORT = process.env.PRINT_PORT || 3132;
@@ -11,7 +12,7 @@ const PORT = process.env.PRINT_PORT || 3132;
 app.use(cors());
 app.use(express.json({ limit: '1mb' }));
 
-app.post('/print/preview', (req, res) => {
+app.post('/print/preview', requireStaff, (req, res) => {
   try {
     const body = req.body || {};
     const { data = {}, config = {} } = body;
@@ -90,7 +91,7 @@ app.get('/print/preview', (req, res) => {
   res.send(tool);
 });
 
-app.post('/print', async (req, res) => {
+app.post('/print', requireStaff, async (req, res) => {
   try {
     const body = req.body;
 

@@ -46,6 +46,7 @@ services:
     environment:
       - PRINT_PORT=3132
       - PRINT_HOST=0.0.0.0
+      - POS_AUTH_DB_URL=ws://surrealdb:8000/rpc
     command: sh -c "npm install && node server.js"
     ports:
       - "3132:3132"
@@ -116,6 +117,7 @@ services:
     environment:
       - TRACKING_PORT=3138
       - TRACKING_HOST=0.0.0.0
+      - POS_AUTH_DB_URL=ws://surrealdb:8000/rpc
       - TRACKING_DB_URL=ws://surrealdb:8000/rpc
       - TRACKING_DB_NS=posr
       - TRACKING_DB_NAME=posr
@@ -138,6 +140,7 @@ services:
     environment:
       - API_PORT=3140
       - API_HOST=0.0.0.0
+      - POS_AUTH_DB_URL=ws://surrealdb:8000/rpc
       - API_LOG_LEVEL=info
       - API_ALLOWED_ORIGINS=${API_ALLOWED_ORIGINS:-http://localhost:5173}
     command: sh -c "npm install && node server.js"
