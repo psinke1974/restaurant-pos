@@ -6,6 +6,7 @@ import {
   Patch,
   RecordIdRange,
   RecordResult,
+  RetryOptions,
   StringRecordId,
   Table,
   Values
@@ -25,6 +26,25 @@ const getErrorMessage = (error: unknown) => {
 
   return String(error);
 };
+
+/**
+ * Retry on transaction conflicts (e.g. two terminals paying at the same moment
+ * both bump the invoice counter). SurrealDB < 3.1 only reports these in the
+ * message, so match on that. Only used for single-statement calls, which are
+ * safe to re-send.
+ */
+const CONFLICT_RETRY: Partial<RetryOptions> = {
+  enabled: true,
+  attempts: 5,
+  retryDelay: 50,
+  retryDelayMax: 1000,
+  retryDelayMultiplier: 2,
+  retryDelayJitter: 0.3,
+  retryable: (error) => /transaction conflict|can be retried|retry the transaction/i.test(getErrorMessage(error)),
+};
+
+/** True when `sql` is one statement (a trailing `;` is fine). */
+const isSingleStatement = (sql: string) => !sql.trim().replace(/;\s*$/, '').includes(';');
 
 const toTable = (value: string | Table) => (value instanceof Table ? value : new Table(value));
 
@@ -55,7 +75,8 @@ export const useDB = () => {
       // start performance timer
       const t0 = performance.now();
 
-      const result = await client.query<R>(sql, parameters).collect<R>();
+      const pending = client.query<R>(sql, parameters);
+      const result = await (isSingleStatement(sql) ? pending.retry(CONFLICT_RETRY) : pending).collect<R>();
 
       // end performance timer
       const t1 = performance.now();
@@ -139,7 +160,7 @@ export const useDB = () => {
         console.groupEnd()
       }
 
-      return client.insert<T>(toTable(thing), data);
+      return client.insert<T>(toTable(thing), data).retry(CONFLICT_RETRY);
     } catch (e) {
       console.error('ERROR while insert', e);
       toast.error(getErrorMessage(e));
@@ -163,12 +184,12 @@ export const useDB = () => {
 
       const normalizedThing = toThing(thing);
       if (normalizedThing instanceof Table) {
-        return client.update<T>(normalizedThing).merge(data);
+        return client.update<T>(normalizedThing).merge(data).retry(CONFLICT_RETRY);
       }
       if (normalizedThing instanceof RecordIdRange) {
-        return client.update<T>(normalizedThing).merge(data);
+        return client.update<T>(normalizedThing).merge(data).retry(CONFLICT_RETRY);
       }
-      return client.update<T>(normalizedThing as AnyRecordId).merge(data);
+      return client.update<T>(normalizedThing as AnyRecordId).merge(data).retry(CONFLICT_RETRY);
     } catch (e) {
       console.error('ERROR while updating', e);
       toast.error(getErrorMessage(e));
@@ -191,12 +212,12 @@ export const useDB = () => {
 
       const normalizedThing = toThing(thing);
       if (normalizedThing instanceof Table) {
-        return client.update<T>(normalizedThing).patch(data);
+        return client.update<T>(normalizedThing).patch(data).retry(CONFLICT_RETRY);
       }
       if (normalizedThing instanceof RecordIdRange) {
-        return client.update<T>(normalizedThing).patch(data);
+        return client.update<T>(normalizedThing).patch(data).retry(CONFLICT_RETRY);
       }
-      return client.update<T>(normalizedThing as AnyRecordId).patch(data);
+      return client.update<T>(normalizedThing as AnyRecordId).patch(data).retry(CONFLICT_RETRY);
     } catch (e) {
       console.error('ERROR while patching', e);
       toast.error(getErrorMessage(e));
@@ -219,12 +240,12 @@ export const useDB = () => {
 
       const normalizedThing = toThing(thing);
       if (normalizedThing instanceof Table) {
-        return client.update<T>(normalizedThing).merge(data);
+        return client.update<T>(normalizedThing).merge(data).retry(CONFLICT_RETRY);
       }
       if (normalizedThing instanceof RecordIdRange) {
-        return client.update<T>(normalizedThing).merge(data);
+        return client.update<T>(normalizedThing).merge(data).retry(CONFLICT_RETRY);
       }
-      return client.update<T>(normalizedThing as AnyRecordId).merge(data);
+      return client.update<T>(normalizedThing as AnyRecordId).merge(data).retry(CONFLICT_RETRY);
     } catch (e) {
       console.error('ERROR while merging', e);
       toast.error(getErrorMessage(e));
@@ -247,12 +268,12 @@ export const useDB = () => {
 
       const normalizedThing = toThing(thing);
       if (normalizedThing instanceof Table) {
-        return client.upsert<T>(normalizedThing).content(data);
+        return client.upsert<T>(normalizedThing).content(data).retry(CONFLICT_RETRY);
       }
       if (normalizedThing instanceof RecordIdRange) {
-        return client.upsert<T>(normalizedThing).content(data);
+        return client.upsert<T>(normalizedThing).content(data).retry(CONFLICT_RETRY);
       }
-      return client.upsert<T>(normalizedThing as AnyRecordId).content(data);
+      return client.upsert<T>(normalizedThing as AnyRecordId).content(data).retry(CONFLICT_RETRY);
     } catch (e) {
       console.error('ERROR while upserting', e);
       toast.error(getErrorMessage(e));
