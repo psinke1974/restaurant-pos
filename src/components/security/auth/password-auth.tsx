@@ -2,8 +2,8 @@ import { Button } from '@/components/common/input/button';
 import React, { useState } from 'react';
 import { SecurityAction, SecurityManager } from '@/providers/security.provider';
 import {Input} from "@/components/common/input/input.tsx";
-import {useDB} from "@/api/db/db.ts";
-import {Tables} from "@/api/db/tables.ts";
+import {TooManyAttemptsError, verifyCredentials} from "@/api/db/auth.ts";
+import {hasModule} from "@/components/security/auth/has-module.ts";
 import { useTranslation } from 'react-i18next';
 
 interface PasswordAuthProps {
@@ -18,8 +18,8 @@ export const PasswordAuth: React.FC<PasswordAuthProps> = ({
   currentAction
 }) => {
   const { t } = useTranslation(['auth', 'common']);
-  const db = useDB();
 
+  const [login, setLogin] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
@@ -27,15 +27,21 @@ export const PasswordAuth: React.FC<PasswordAuthProps> = ({
     e.preventDefault();
     setError('');
 
-    const [userWithModules] = await db.query(`SELECT * FROM ${Tables.users} FETCH user_role, user_shift where deleted_at = none and $module IN user_role.roles and login_method = 'form' and crypto::bcrypt::compare(password, $password) = true `, {
-      module: currentAction.module,
-      password
-    });
+    let manager: SecurityManager | undefined;
+    try {
+      manager = await verifyCredentials<SecurityManager>(login, password, 'form');
+    } catch (e) {
+      if (e instanceof TooManyAttemptsError) {
+        setError(t('login.tooManyAttempts'));
+        setPassword('');
+        return;
+      }
+    }
 
-    if(userWithModules.length > 0){
-      onSuccess(userWithModules[0] as SecurityManager);
-    }else{
-      setError(t('security.invalidPassword', { module: currentAction.module }));
+    if (manager && hasModule(manager, currentAction?.module)) {
+      onSuccess(manager);
+    } else {
+      setError(t('security.invalidPassword', { module: currentAction?.module }));
     }
 
     setPassword('');
@@ -45,6 +51,19 @@ export const PasswordAuth: React.FC<PasswordAuthProps> = ({
     <form onSubmit={handleSubmit} className="space-y-4" autoComplete="off">
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">
+          {t('login.username')}
+        </label>
+        <Input
+          value={login}
+          onChange={(e) => setLogin(e.target.value)}
+          autoFocus
+          autoComplete="off"
+          enableKeyboard
+          inputSize="lg"
+        />
+      </div>
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
           {t('security.enterPassword')}
         </label>
         <Input
@@ -52,7 +71,6 @@ export const PasswordAuth: React.FC<PasswordAuthProps> = ({
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           placeholder={t('security.passwordPlaceholder')}
-          autoFocus
           autoComplete="off"
           enableKeyboard
           inputSize="lg"

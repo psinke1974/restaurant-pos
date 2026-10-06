@@ -309,8 +309,22 @@ Built for real restaurant pressure situations:
 git clone https://github.com/ahmedali5530/restaurant-pos
 cd restaurant-pos
 bun install
+cp .env.example .env   # then set SURREAL_PASS to a long random password
 docker compose up -d
 ```
+
+### Database access
+
+The browser never gets database credentials. Staff sign in with their PIN or
+username/password through SurrealDB record access (`pos`), and every table
+grants access only to signed-in staff. This is set up by
+`migrations/2026_10_06_record_access.surql`; apply it (or run
+`migrations/scripts/run-prod-migrations.cjs`) on every install, and again after
+importing a schema dump. New tables must be added to that migration, otherwise
+the app sees them as empty (a unit test checks this against `Tables`).
+
+After 10 failed sign-ins within a minute, or 30 within 15 minutes, sign-in is
+blocked for everyone until the failures age out.
 ---
 
 ## 🧭 Roadmap and WIP
