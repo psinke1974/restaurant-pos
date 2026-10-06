@@ -55,8 +55,12 @@ export const Input = forwardRef((props: InputProps, ref: Ref<any>) => {
     id: providedId,
     ...inputProps
   } = props;
-  // null when the input is used outside a react-hook-form FormProvider.
-  const formContext: ReturnType<typeof useFormContext> | null = useFormContext() ?? null;
+  let formContext: ReturnType<typeof useFormContext> | null = null;
+  try {
+    formContext = useFormContext();
+  } catch (e) {
+    formContext = null;
+  }
   const registeredValue = formContext && name ? formContext.watch(name) : undefined;
   const resolvedValue = value !== undefined ? value : (!enableKeyboard ? registeredValue : undefined);
   const onClick = useCallback((event: any) => {

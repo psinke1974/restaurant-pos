@@ -185,6 +185,8 @@ export const SplitAmount = ({
     setIsSaving(true);
     try {
       await assertOrderMutationsAllowed(db);
+      let nextInvoiceNumber = await generateNextInvoiceNumber(db);
+      let nextAutoId = await getNextAutoId(db);
       const createdAt = new Date();
       const createdOrders = [];
       const oldOrderId = order.id.toString();
@@ -262,8 +264,8 @@ export const SplitAmount = ({
           tags: [OrderStatus['Spilt']],
           order_type: order.order_type.id,
           status: OrderStatus["In Progress"],
-          auto_id: await getNextAutoId(db),
-          invoice_number: await generateNextInvoiceNumber(db),
+          auto_id: nextAutoId,
+          invoice_number: nextInvoiceNumber,
           items: newItemIds,
           table: order.table.id,
           user: order.user.id,
@@ -283,6 +285,8 @@ export const SplitAmount = ({
         const splitOrder = await db.create(Tables.orders, orderData);
         createdOrders.push(splitOrder[0]);
         newItems[splitOrder[0].id.toString()] = newItemIds.map(item => item.toString());
+        nextAutoId += 1;
+        nextInvoiceNumber += 1;
       }
 
       // Mark original order as split
@@ -382,7 +386,7 @@ export const SplitAmount = ({
                         <IconTooltipButton
                           variant="danger"
                           icon={faTrash}
-                          label={t('common:actions.remove')}
+                         
                           size="sm"
                           onClick={() => removeSplit(split.id)}
                         />

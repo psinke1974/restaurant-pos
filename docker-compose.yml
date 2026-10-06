@@ -23,11 +23,11 @@ services:
 
   surrealdb:
     image: surrealdb/surrealdb:v3.0.5
-    # Root credentials come from SURREAL_USER / SURREAL_PASS in .env.
+    # Same as: surreal start -u root -p root surrealkv://database --bind 0.0.0.0:8001
     working_dir: /
     user: "0:0"
     command: >
-      start --user ${SURREAL_USER:-root} --pass ${SURREAL_PASS:?Set SURREAL_PASS in .env} --allow-guests surrealkv://database --bind 0.0.0.0:8000
+      start --user root --pass root surrealkv://database --bind 0.0.0.0:8000
     ports:
       - "8000:8000"
     volumes:
@@ -46,7 +46,6 @@ services:
     environment:
       - PRINT_PORT=3132
       - PRINT_HOST=0.0.0.0
-      - POS_AUTH_DB_URL=ws://surrealdb:8000/rpc
     command: sh -c "npm install && node server.js"
     ports:
       - "3132:3132"
@@ -69,8 +68,8 @@ services:
       - SURREAL_URL=ws://surrealdb:8000/rpc
       - SURREAL_NS=posr
       - SURREAL_DB=posr
-      - SURREAL_USER=${SURREAL_USER:-root}
-      - SURREAL_PASS=${SURREAL_PASS:?Set SURREAL_PASS in .env}
+      - SURREAL_USER=root
+      - SURREAL_PASS=root
       - PAYMENT_LOG_LEVEL=debug
     command: sh -c "npm install && node server.js"
     ports:
@@ -93,8 +92,8 @@ services:
       - SYNC_SOURCE_URL=${SYNC_SOURCE_URL:-ws://surrealdb:8000/rpc}
       - SYNC_SOURCE_NS=${SYNC_SOURCE_NS:-posr}
       - SYNC_SOURCE_DB=${SYNC_SOURCE_DB:-posr}
-      - SYNC_SOURCE_USER=${SYNC_SOURCE_USER:-${SURREAL_USER:-root}}
-      - SYNC_SOURCE_PASS=${SYNC_SOURCE_PASS:-${SURREAL_PASS:?Set SURREAL_PASS in .env}}
+      - SYNC_SOURCE_USER=${SYNC_SOURCE_USER:-root}
+      - SYNC_SOURCE_PASS=${SYNC_SOURCE_PASS:-root}
       - SYNC_MASTER_URL=${SYNC_MASTER_URL:-}
       - SYNC_MASTER_NS=${SYNC_MASTER_NS:-posr}
       - SYNC_MASTER_DB=${SYNC_MASTER_DB:-posr}
@@ -117,12 +116,11 @@ services:
     environment:
       - TRACKING_PORT=3138
       - TRACKING_HOST=0.0.0.0
-      - POS_AUTH_DB_URL=ws://surrealdb:8000/rpc
       - TRACKING_DB_URL=ws://surrealdb:8000/rpc
       - TRACKING_DB_NS=posr
       - TRACKING_DB_NAME=posr
-      - TRACKING_DB_USER=${SURREAL_USER:-root}
-      - TRACKING_DB_PASS=${SURREAL_PASS:?Set SURREAL_PASS in .env}
+      - TRACKING_DB_USER=root
+      - TRACKING_DB_PASS=root
     command: sh -c "npm install && npm start"
     ports:
       - "3138:3138"
@@ -140,7 +138,6 @@ services:
     environment:
       - API_PORT=3140
       - API_HOST=0.0.0.0
-      - POS_AUTH_DB_URL=ws://surrealdb:8000/rpc
       - API_LOG_LEVEL=info
       - API_ALLOWED_ORIGINS=${API_ALLOWED_ORIGINS:-http://localhost:5173}
     command: sh -c "npm install && node server.js"
@@ -158,8 +155,8 @@ services:
       # Timezone for cron schedule (change if you need local time)
       - TZ=UTC
       # SurrealDB auth + target namespace/database for export
-      - SURREAL_USER=${SURREAL_USER:-root}
-      - SURREAL_PASS=${SURREAL_PASS:?Set SURREAL_PASS in .env}
+      - SURREAL_USER=root
+      - SURREAL_PASS=root
       - SURREAL_NAMESPACE=posr
       - SURREAL_DATABASE=posr
       # Endpoint used from inside the surrealdb container

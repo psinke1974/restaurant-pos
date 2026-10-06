@@ -129,8 +129,7 @@
     "invalidModifierGroup": "Группа модификаторов недействительна",
     "duplicateDishModifierGroup": "Группа модификаторов уже привязана к этому блюду",
     "invalidPriority": "Приоритет недействителен",
-    "invalidRequiredModifiers": "Значение обязательных модификаторов недействительно",
-    "pinRequired": "Введите 4-значный PIN для этого пользователя."
+    "invalidRequiredModifiers": "Значение обязательных модификаторов недействительно"
   },
   "settingsDelete": {
     "deactivated": "{{entity}} используется и был деактивирован.",

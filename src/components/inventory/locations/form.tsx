@@ -129,14 +129,12 @@ export const InventoryLocationForm = ({ open, onClose, data }: Props) => {
             name="type"
             control={control}
             render={({ field }) => (
-              <div>
-                <label className="block text-sm mb-1">{t("columns.locationType")}</label>
-                <ReactSelect
-                  options={typeOptions}
-                  value={typeOptions.find((o) => o.value === field.value) ?? null}
-                  onChange={(opt: any) => field.onChange(opt?.value ?? "Store")}
-                />
-              </div>
+              <ReactSelect
+                label={t("columns.locationType")}
+                options={typeOptions}
+                value={typeOptions.find((o) => o.value === field.value) ?? null}
+                onChange={(opt: any) => field.onChange(opt?.value ?? "Store")}
+              />
             )}
           />
           <Controller

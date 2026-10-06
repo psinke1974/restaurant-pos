@@ -185,6 +185,8 @@ export const SplitItems = ({
     setIsSaving(true);
     try {
       await assertOrderMutationsAllowed(db);
+      let nextInvoiceNumber = await generateNextInvoiceNumber(db);
+      let nextAutoId = await getNextAutoId(db);
       const createdAt = new Date();
       const createdOrders = [];
       const oldOrderId = order.id.toString();
@@ -212,8 +214,8 @@ export const SplitItems = ({
           // customer: order.customer ? new StringRecordId(order.customer.id.toString()) : null,
           order_type: order.order_type.id,
           status: OrderStatus["In Progress"],
-          auto_id: await getNextAutoId(db),
-          invoice_number: await generateNextInvoiceNumber(db),
+          auto_id: nextAutoId,
+          invoice_number: nextInvoiceNumber,
           items: items,
           table: order.table.id,
           user: order.user.id,
@@ -224,6 +226,8 @@ export const SplitItems = ({
         const splitOrder = await db.create(Tables.orders, orderData);
         createdOrders.push(splitOrder[0]);
         newItems[splitOrder[0].id.toString()] = items.map(item => item.toString());
+        nextAutoId += 1;
+        nextInvoiceNumber += 1;
 
         for ( const item of items ) {
           await db.merge(item, {

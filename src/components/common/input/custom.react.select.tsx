@@ -3,8 +3,8 @@ import Select, {
   components as selectComponents,
   GroupBase,
   Props,
-  Theme,
 } from "react-select";
+import {Theme} from "react-select/dist/declarations/src/";
 import Spinner from "@/assets/images/spinner.svg";
 
 const primaryColor = "23 23 23";

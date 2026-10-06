@@ -39,9 +39,7 @@ const AdminUsersList = () => {
       header: t('columns.lastName')
     }),
     columnHelper.accessor("login", {
-      header: t('columns.login'),
-      // PIN users have no username: they pick their name on the login screen.
-      cell: info => info.row.original.login_method === 'form' ? info.getValue() : 'PIN',
+      header: t('columns.login')
     }),
     columnHelper.accessor("user_role", {
       header: t('columns.role'),

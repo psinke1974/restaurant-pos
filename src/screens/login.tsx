@@ -1,7 +1,7 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowLeft, faBackspace, faCircle, faClock } from "@fortawesome/free-solid-svg-icons";
+import { faBackspace, faCircle, faClock } from "@fortawesome/free-solid-svg-icons";
 import {faCircle as circleRegular} from '@fortawesome/free-regular-svg-icons';
-import {useEffect, useLayoutEffect, useMemo, useState} from "react";
+import {useEffect, useLayoutEffect, useState} from "react";
 import { useAtom } from "jotai";
 import { appPage } from "@/store/jotai.ts";
 import { cn } from "@/lib/utils.ts";
@@ -21,12 +21,9 @@ import { ensureEmployeeForUser } from "@/lib/labor-engine/employee.resolver.ts";
 import { useTranslation } from "react-i18next";
 import i18n from "@/lib/i18n.ts";
 import { DocumentTitle } from "@/components/common/document-title.tsx";
-import { useDatabase } from "@/hooks/useDatabase.ts";
-import { fetchLoginDirectory, LoginDirectoryEntry, TooManyAttemptsError, userKey, verifyCredentials } from "@/api/db/auth.ts";
 
 export const Login = () => {
   const db = useDB();
-  const { client, isConnected, signIn, signOut } = useDatabase();
   const { t } = useTranslation('auth');
 
   const [code, setCode] = useState('');
@@ -37,29 +34,6 @@ export const Login = () => {
   const [error, setError] = useState(false);
   const [showClockInModal, setShowClockInModal] = useState(false);
   const [pendingUser, setPendingUser] = useState<User | null>(null);
-  const [directory, setDirectory] = useState<LoginDirectoryEntry[]>([]);
-  const [selectedKey, setSelectedKey] = useState<string | undefined>();
-
-  // While locked only the user who locked the terminal can open it again.
-  const lockedKey = page.locked && page.lockedBy?.id ? userKey(page.lockedBy.id) : undefined;
-  const pinUserKey = lockedKey ?? selectedKey;
-  const pinUser = useMemo(
-    () => directory.find(entry => entry.key === pinUserKey),
-    [directory, pinUserKey],
-  );
-
-  useEffect(() => {
-    if (!isConnected) return;
-    let cancelled = false;
-    fetchLoginDirectory(client)
-      .then(entries => {
-        if (!cancelled) setDirectory(entries);
-      })
-      .catch(error => console.error('Could not load login names', error));
-    return () => {
-      cancelled = true;
-    };
-  }, [client, isConnected]);
 
   const navigation = useNavigate();
   const location = useLocation();
@@ -78,28 +52,19 @@ export const Login = () => {
     }
   }
 
-  // `subject` is the user's record key for PIN login, the username for form login.
-  const checkLogin = async (subject: string, pass: string, method: 'pin'|'form') => {
-    if ((method === 'pin' && subject && pass.trim().length === 4) || (method === 'form' && subject.trim() && pass.trim())) {
-      let loggedInUser: any;
-      try {
-        if (page.locked) {
-          // Unlocking: check the credentials on a separate connection so a
-          // wrong user can't take over this terminal's session.
-          loggedInUser = await verifyCredentials(subject, pass, method);
-        } else {
-          await signIn(subject, pass, method);
-          [loggedInUser] = await db.query(`SELECT * FROM ONLY $auth FETCH user_role, user_shift`);
-        }
-      } catch (e) {
-        if (e instanceof TooManyAttemptsError) {
-          toast.error(t('login.tooManyAttempts'));
-        }
-        denyLogin();
-        return false;
-      }
+  const checkLogin = async (login: string, pass: string, method: 'pin'|'form') => {
+    if ((method === 'pin' && login.trim().length === 4) || (method === 'form' && login.trim() && pass.trim())) {
+      const query = method === 'pin'
+        ? `SELECT * from ${Tables.users} where login = $login and deleted_at = none and (login_method = 'pin' OR login_method = NONE) and crypto::bcrypt::compare(password, $password) = true fetch user_role, user_shift`
+        : `SELECT * from ${Tables.users} where login = $login and deleted_at = none and login_method = 'form' and crypto::bcrypt::compare(password, $password) = true fetch user_role, user_shift`;
 
-      if(loggedInUser){
+      const record: any = await db.query(query, {
+        login: login,
+        password: pass,
+      });
+
+      if(record[0].length > 0){
+        const loggedInUser = record[0][0];
         const roleId = typeof loggedInUser.user_role === "object" ? loggedInUser.user_role?.id : loggedInUser.user_role;
         let fetchedRole: UserRole | undefined;
 
@@ -118,14 +83,14 @@ export const Login = () => {
             : getUserModules(loggedInUser),
         };
 
-        if(page.locked && String(page.lockedBy?.id) !== String(loggedInUser.id)){
+        if(page.locked && page.lockedBy?.login !== record[0][0].login){
           denyLogin();
           return false;
         }
 
         // Check for active time entry
         const timeEntryCheck: any = await db.query(`SELECT * from ${Tables.time_entries} where user = $userId and clock_out = NONE and platform = $platform`, {
-          userId: loggedInUser.id,
+          userId: record[0][0].id,
           platform: 'web'
         });
 
@@ -153,7 +118,6 @@ export const Login = () => {
     }));
 
     setCode('');
-    setSelectedKey(undefined);
     setUsername('');
     setPassword('');
     setShowClockInModal(false);
@@ -190,8 +154,8 @@ export const Login = () => {
   }
 
   useEffect(() => {
-    if (loginMethod === 'pin' && pinUserKey) {
-      checkLogin(pinUserKey, code, 'pin');
+    if (loginMethod === 'pin') {
+      checkLogin(code, code, 'pin');
     }
   }, [code]);
 
@@ -228,7 +192,6 @@ export const Login = () => {
               setUsername('');
               setPassword('');
               setCode('');
-              setSelectedKey(undefined);
             }}
           >
             {t('login.pin')}
@@ -246,7 +209,6 @@ export const Login = () => {
               setUsername('');
               setPassword('');
               setCode('');
-              setSelectedKey(undefined);
             }}
           >
             {t('login.form')}
@@ -257,51 +219,8 @@ export const Login = () => {
             name: `${page?.lockedBy?.first_name ?? ''} ${page?.lockedBy?.last_name ?? ''}`.trim()
           })}</div>
         )}
-        {loginMethod === 'pin' && !pinUserKey && (
-          <div className="flex flex-col items-center gap-4 w-full max-w-[640px] px-4">
-            <div className="text-neutral-300 text-lg">{t('login.whoAreYou')}</div>
-            {directory.length === 0 ? (
-              <div className="text-neutral-400 text-sm">{t('login.noPinUsers')}</div>
-            ) : (
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 w-full max-h-[50vh] overflow-y-auto">
-                {directory.map(entry => (
-                  <button
-                    key={entry.key}
-                    type="button"
-                    className="btn btn-filled lg !bg-neutral-800 text-white border-2 border-neutral-700 hover:border-warning-500 truncate"
-                    onClick={() => {
-                      setCode('');
-                      setError(false);
-                      setSelectedKey(entry.key);
-                    }}
-                  >
-                    {`${entry.first_name ?? ''} ${entry.last_name ?? ''}`.trim()}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-        {loginMethod === 'pin' && pinUserKey && (
+        {loginMethod === 'pin' && (
           <>
-            <div className="flex items-center gap-3 text-neutral-100 text-xl">
-              {!lockedKey && (
-                <button
-                  type="button"
-                  className="size-10 rounded-full text-neutral-300 hover:bg-neutral-800 transition-colors"
-                  aria-label={t('login.notYou')}
-                  title={t('login.notYou')}
-                  onClick={() => {
-                    setSelectedKey(undefined);
-                    setCode('');
-                    setError(false);
-                  }}
-                >
-                  <FontAwesomeIcon icon={faArrowLeft}/>
-                </button>
-              )}
-              <span>{pinUser ? `${pinUser.first_name ?? ''} ${pinUser.last_name ?? ''}`.trim() : ''}</span>
-            </div>
             <div className={
               cn(
                 "flex gap-3 text-neutral-100",
@@ -377,10 +296,6 @@ export const Login = () => {
             setShowClockInModal(false);
             setPendingUser(null);
             setCode('');
-            if (!page.locked) {
-              // Signed in to the database but never entered the app.
-              void signOut();
-            }
           }}
           title={t('clockIn.title')}
           shouldCloseOnOverlayClick={false}

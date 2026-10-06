@@ -323,8 +323,7 @@
     "reset": "Zurücksetzen",
     "importDishesTitle": "Gerichte per CSV importieren",
     "importIngredientsTitle": "Gerichtszutaten per CSV importieren",
-    "importModifierGroupsTitle": "Modifier-Gruppen für Gerichte per CSV importieren",
-    "pinKeepCurrent": "Leer lassen, um die aktuelle PIN zu behalten"
+    "importModifierGroupsTitle": "Modifier-Gruppen für Gerichte per CSV importieren"
   },
   "dishView": {
     "detailsTitle": "Gerichtdetails",

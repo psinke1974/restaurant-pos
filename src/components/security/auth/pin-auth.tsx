@@ -2,9 +2,8 @@ import { Button } from '@/components/common/input/button';
 import React, { useState, useEffect } from 'react';
 import { SecurityAction, SecurityManager } from '@/providers/security.provider';
 import {cn} from "@/lib/utils.ts";
-import {TooManyAttemptsError, userKey, verifyCredentials} from "@/api/db/auth.ts";
 import {useDB} from "@/api/db/db.ts";
-import {hasModule} from "@/components/security/auth/has-module.ts";
+import {Tables} from "@/api/db/tables.ts";
 import { useTranslation } from 'react-i18next';
 
 interface PinAuthProps {
@@ -19,34 +18,12 @@ export const PinAuth: React.FC<PinAuthProps> = ({
   currentAction
 }) => {
   const { t } = useTranslation('auth');
-  const db = useDB();
   const [pin, setPin] = useState('');
   const [error, setError] = useState('');
-  const [approvers, setApprovers] = useState<SecurityManager[]>([]);
-  const [approverKey, setApproverKey] = useState<string | undefined>();
-
-  // Only PIN users whose role grants the module can approve, so list just those.
-  useEffect(() => {
-    let cancelled = false;
-    db.query<[SecurityManager[]]>(
-      `SELECT id, first_name, last_name, user_role FROM user
-        WHERE deleted_at = NONE AND login_method != 'form'
-        ORDER BY first_name, last_name FETCH user_role`
-    ).then(([users]) => {
-      if (cancelled) return;
-      const eligible = (users ?? []).filter(user => hasModule(user, currentAction?.module));
-      setApprovers(eligible);
-      if (eligible.length === 1) {
-        setApproverKey(userKey(eligible[0].id));
-      }
-    }).catch(error => console.error('Could not load approvers', error));
-    return () => {
-      cancelled = true;
-    };
-  }, [currentAction?.module]);
+  const db = useDB();
 
   const handleNumberClick = (num: string) => {
-    if (approverKey && pin.length < 4) {
+    if (pin.length < 4) {
       setPin(prev => prev + num);
       setError('');
     }
@@ -70,21 +47,14 @@ export const PinAuth: React.FC<PinAuthProps> = ({
   };
 
   const validatePIN = async () => {
-    if (!approverKey) return;
-    let manager: SecurityManager | undefined;
-    try {
-      manager = await verifyCredentials<SecurityManager>(approverKey, pin, 'pin');
-    } catch (e) {
-      if (e instanceof TooManyAttemptsError) {
-        setError(t('login.tooManyAttempts'));
-        setPin('');
-        return;
-      }
-    }
+    const [userWithModules] = await db.query(`SELECT * FROM ${Tables.users} where deleted_at = none and $module IN user_role.roles and login_method = 'pin' and login = $pin and crypto::bcrypt::compare(password, $pin) = true FETCH user_role, user_shift`, {
+      module: currentAction.module,
+      pin
+    });
 
-    if (manager && hasModule(manager, currentAction?.module)) {
-      onSuccess(manager);
-    } else {
+    if(userWithModules.length > 0){
+      onSuccess(userWithModules[0] as SecurityManager);
+    }else{
       setError(t('security.invalidPin', { module: currentAction?.module }));
     }
 
@@ -111,68 +81,20 @@ export const PinAuth: React.FC<PinAuthProps> = ({
   };
 
   useEffect(() => {
-    const onKeyDown = (e: KeyboardEvent) => handleKeyPress(e.key);
-    document.addEventListener('keydown', onKeyDown);
-    return () => document.removeEventListener('keydown', onKeyDown);
-  }, [approverKey]);
+    document.addEventListener('keydown', (e) => handleKeyPress(e.key));
+    return () => document.removeEventListener('keydown', (e) => handleKeyPress(e.key));
+  }, []);
 
   useEffect(() => {
-    if(approverKey && pin.length === 4){
+    if(pin.length === 4){
       validatePIN();
     }
   }, [pin]);
 
   const btnClasses = 'size-[60px] sm:size-[60px] md:size-[90px] p-0 text-neutral-900 transition-all duration-75 bg-neutral-100 rounded-full text-3xl';
 
-  if (!approverKey) {
-    return (
-      <div className="space-y-4">
-        <div className="text-center text-neutral-600">{t('security.chooseApprover')}</div>
-        {approvers.length === 0 ? (
-          <div className="alert alert-warning">{t('security.noApprovers', { module: currentAction?.module })}</div>
-        ) : (
-          <div className="grid grid-cols-2 gap-3">
-            {approvers.map(approver => (
-              <Button
-                key={userKey(approver.id)}
-                type="button"
-                variant="secondary"
-                className="lg truncate"
-                onClick={() => {
-                  setError('');
-                  setPin('');
-                  setApproverKey(userKey(approver.id));
-                }}
-              >
-                {`${approver.first_name ?? ''} ${approver.last_name ?? ''}`.trim()}
-              </Button>
-            ))}
-          </div>
-        )}
-      </div>
-    );
-  }
-
-  const approver = approvers.find(item => userKey(item.id) === approverKey);
-
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="flex items-center justify-center gap-3 text-lg">
-        {approvers.length > 1 && (
-          <button
-            type="button"
-            className="btn btn-flat"
-            onClick={() => {
-              setPin('');
-              setError('');
-              setApproverKey(undefined);
-            }}
-          >
-            ←
-          </button>
-        )}
-        <span>{approver ? `${approver.first_name ?? ''} ${approver.last_name ?? ''}`.trim() : ''}</span>
-      </div>
       <div>
         {/*{error && (*/}
         {/*  <div className="my-4 alert alert-danger">{error}</div>*/}

@@ -138,8 +138,7 @@
     "invalidModifierGroup": "Modifier group is invalid",
     "duplicateDishModifierGroup": "Modifier group is already attached to this dish",
     "invalidPriority": "Priority is invalid",
-    "invalidRequiredModifiers": "Required modifiers value is invalid",
-    "pinRequired": "Enter a 4-digit PIN for this user."
+    "invalidRequiredModifiers": "Required modifiers value is invalid"
   },
   "settingsDelete": {
     "deactivated": "{{entity}} is in use and was deactivated.",

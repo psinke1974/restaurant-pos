@@ -323,8 +323,7 @@
     "reset": "Reset",
     "importDishesTitle": "Gerechten importeren via CSV",
     "importIngredientsTitle": "Gerechtingrediënten importeren via CSV",
-    "importModifierGroupsTitle": "Modifiergroepen van gerechten importeren via CSV",
-    "pinKeepCurrent": "Laat leeg om de huidige PIN te houden"
+    "importModifierGroupsTitle": "Modifiergroepen van gerechten importeren via CSV"
   },
   "dishView": {
     "detailsTitle": "Gerechtdetails",

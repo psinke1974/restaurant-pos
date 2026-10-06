@@ -60,7 +60,7 @@ export const toArrayBuffer = (value: ArrayBuffer | Uint8Array | string): ArrayBu
     ) as ArrayBuffer;
   }
   if (typeof value === 'string') {
-    return toUint8Array(value).buffer as ArrayBuffer;
+    return toUint8Array(value).buffer;
   }
   throw new Error('Invalid value type for ArrayBuffer conversion');
 };

@@ -45,16 +45,12 @@ const validationSchema = yup.object({
   last_name: yup.string().required(i18n.t('validation:required')),
   login: yup
     .string()
-    .nullable()
+    .required(i18n.t('validation:required'))
     .when("login_method.value", {
-      is: "form",
-      then: (schema) => schema.required(i18n.t('validation:required')),
+      is: "pin",
+      then: (schema) =>
+        schema.matches(/^\d{4}$/, "PIN must be exactly 4 digits only."),
     }),
-  // Only stored as a hash; left empty when editing to keep the current PIN.
-  pin: yup
-    .string()
-    .nullable()
-    .matches(/^\d{4}$/, { message: "PIN must be exactly 4 digits only.", excludeEmptyString: true }),
   password: yup.string().nullable(),
   user_role: yup.object({
     label: yup.string(),
@@ -71,8 +67,6 @@ const validationSchema = yup.object({
     otherwise: (schema) => schema.nullable(),
   }),
 });
-
-const isPinLoginMethod = (method?: { value?: string } | null) => method?.value !== 'form';
 
 export const UserForm = ({
   open, onClose, data
@@ -93,8 +87,6 @@ export const UserForm = ({
 
   const lastAutoEmployeeNumber = useRef('');
   const login = watch('login');
-  const firstName = watch('first_name');
-  const lastName = watch('last_name');
   const createEmployee = watch('create_employee');
   const isCreateMode = !data;
 
@@ -108,7 +100,6 @@ export const UserForm = ({
       first_name: null,
       last_name: null,
       login: null,
-      pin: null,
       password: null,
       user_role: null,
       user_shift: null,
@@ -129,7 +120,6 @@ export const UserForm = ({
         first_name: data.first_name,
         last_name: data.last_name,
         login: data.login,
-        pin: null,
         user_role: data?.user_role ? {
           label: data.user_role.name,
           value: data.user_role.id,
@@ -146,9 +136,7 @@ export const UserForm = ({
   }, [data, reset]);
 
   useEffect(() => {
-    // Never derive it from a PIN: employee numbers are visible to all staff.
-    const base = isPinLoginMethod(getValues('login_method')) ? `${firstName ?? ''}${lastName ?? ''}` : login;
-    if (!isCreateMode || !createEmployee || !base) {
+    if (!isCreateMode || !createEmployee || !login) {
       return;
     }
 
@@ -157,10 +145,10 @@ export const UserForm = ({
       return;
     }
 
-    const next = generateEmployeeNumber(base);
+    const next = generateEmployeeNumber(login);
     setValue('employee_number', next);
     lastAutoEmployeeNumber.current = next;
-  }, [login, firstName, lastName, createEmployee, isCreateMode, setValue, getValues]);
+  }, [login, createEmployee, isCreateMode, setValue, getValues]);
 
   const db = useDB();
   const {
@@ -190,16 +178,8 @@ export const UserForm = ({
     vals.login_method = values.login_method.value;
 
     if (vals.login_method === "pin") {
-      // PIN users are picked by name on the login screen; the PIN is only kept as a hash.
-      vals.login = null;
-      vals.password = vals.pin || null;
-      const hadPin = data?.id && (data.login_method ?? 'pin') !== 'form';
-      if (!vals.password && !hadPin) {
-        toast.error(t('toast:admin.pinRequired'));
-        return;
-      }
+      vals.password = vals.login;
     }
-    delete vals.pin;
 
     if(vals.login_method === "form" && !vals.id && !vals.password){
       toast.error(t('toast:admin.passwordRequired'));
@@ -210,12 +190,8 @@ export const UserForm = ({
 
     try {
       if( data?.id ) {
-        if (vals.login_method === "pin" && vals.password) {
-          await db.query(`UPDATE ${data.id} set first_name = $first_name, last_name = $last_name, login = NONE, login_method = $login_method, password = crypto::bcrypt::generate($password), roles = $roles, user_role = $user_role, user_shift = $user_shift`, {
-            ...vals
-          });
-        } else if (vals.login_method === "pin") {
-          await db.query(`UPDATE ${data.id} set first_name = $first_name, last_name = $last_name, login = NONE, login_method = $login_method, roles = $roles, user_role = $user_role, user_shift = $user_shift`, {
+        if (vals.login_method === "pin") {
+          await db.query(`UPDATE ${data.id} set first_name = $first_name, last_name = $last_name, login = $login, login_method = $login_method, password = crypto::bcrypt::generate($password), roles = $roles, user_role = $user_role, user_shift = $user_shift`, {
             ...vals
           });
         } else if (vals.password) {
@@ -234,7 +210,7 @@ export const UserForm = ({
         const userParams = {
           first_name: vals.first_name,
           last_name: vals.last_name,
-          login: vals.login ?? undefined,
+          login: vals.login,
           login_method: vals.login_method,
           password: vals.password,
           roles: vals.roles,
@@ -324,24 +300,9 @@ export const UserForm = ({
                 )}
               />
             </div>
-            {isPinLogin ? (
-              <div className="flex-1">
-                <InputField
-                  type="password"
-                  inputMode="numeric"
-                  maxLength={4}
-                  name="pin"
-                  control={control}
-                  label="Pin"
-                  placeholder={data?.id && (data.login_method ?? 'pin') !== 'form' ? t('forms.pinKeepCurrent') : undefined}
-                  error={errors?.pin?.message}
-                />
-              </div>
-            ) : (
-              <div className="flex-1">
-                <InputField name="login" control={control} label="Username" error={errors?.login?.message}/>
-              </div>
-            )}
+            <div className="flex-1">
+              <InputField name="login" control={control} label={isPinLogin ? "Pin" : "Username"} error={errors?.login?.message}/>
+            </div>
             {!isPinLogin && (
               <div className="flex-1">
                 <InputField type="password" name="password" control={control} label={t('forms.password')} error={errors?.password?.message}/>

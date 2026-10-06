@@ -282,7 +282,7 @@ export const SalesAdvancedReport = () => {
         }
 
 
-        const orderByMode = filters.sortDirection === 'Ascending' ? 'asc' : 'desc';
+        let orderByMode = filters.sortDirection === 'Ascending' ? 'asc' : 'desc';
         let orderByClause = 'created_at';
         if (filters.sortBy) {
           switch (filters.sortBy) {
