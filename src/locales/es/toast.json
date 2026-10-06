@@ -129,8 +129,7 @@
     "invalidModifierGroup": "El grupo de modificadores no es válido",
     "duplicateDishModifierGroup": "El grupo de modificadores ya está vinculado a este plato",
     "invalidPriority": "La prioridad no es válida",
-    "invalidRequiredModifiers": "El valor de modificadores requeridos no es válido",
-    "pinRequired": "Introduce un PIN de 4 dígitos para este usuario."
+    "invalidRequiredModifiers": "El valor de modificadores requeridos no es válido"
   },
   "settingsDelete": {
     "deactivated": "{{entity}} está en uso y fue desactivado.",

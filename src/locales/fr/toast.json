@@ -129,8 +129,7 @@
     "invalidModifierGroup": "Le groupe de modificateurs est invalide",
     "duplicateDishModifierGroup": "Le groupe de modificateurs est déjà associé à ce plat",
     "invalidPriority": "La priorité est invalide",
-    "invalidRequiredModifiers": "La valeur des modificateurs requis est invalide",
-    "pinRequired": "Saisissez un PIN à 4 chiffres pour cet utilisateur."
+    "invalidRequiredModifiers": "La valeur des modificateurs requis est invalide"
   },
   "settingsDelete": {
     "deactivated": "{{entity}} est utilisé et a été désactivé.",

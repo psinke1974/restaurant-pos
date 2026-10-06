@@ -8,8 +8,7 @@
     <script>
       (function () {
         var gaId = '%VITE_GA4_ID%';
-        // Unset VITE_ vars are left as the literal placeholder by Vite.
-        if (!gaId || gaId.charAt(0) === '%') return;
+        if (!gaId) return;
 
         var script = document.createElement('script');
         script.async = true;

@@ -28,7 +28,7 @@ import {
 import { publishSaleCompleted } from "@/integrations/accounting/events/publish.ts";
 
 type DBLike = {
-  query: <R extends unknown[] = any[]>(sql: string, params?: Record<string, unknown>) => Promise<R>;
+  query: (sql: string, params?: Record<string, unknown>) => Promise<unknown[][]>;
   create: (table: string, data: Record<string, unknown>) => Promise<unknown>;
   merge: (id: unknown, data: Record<string, unknown>) => Promise<unknown>;
   delete: (id: unknown) => Promise<unknown>;

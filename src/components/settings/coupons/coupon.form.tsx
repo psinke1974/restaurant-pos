@@ -184,6 +184,7 @@ export const CouponForm = ({ open, onClose, data }: Props) => {
       toast.success(t('toast:admin.couponSaved', { code: values.code }));
     } catch (e) {
       toast.error(e);
+      // eslint-disable-next-line no-console
       console.log(e);
     }
   };

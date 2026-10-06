@@ -43,5 +43,3 @@ database/LOCK
 printing/data
 backups/surrealdb
 .qwen
-# Local environment (secrets). Template: .env.example
-.env

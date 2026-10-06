@@ -1,4 +1,3 @@
-import { staffAuthHeaders } from "@/api/db/auth.ts";
 import {apiUrl} from "@/lib/api.service.ts";
 
 // Chat completions are proxied through the backend `api` service so the OpenAI
@@ -46,7 +45,7 @@ export const callOpenAIChat = async ({
 }): Promise<OpenAIChatResponse> => {
   const response = await fetch(apiUrl(CHAT_COMPLETIONS_PATH), {
     method: "POST",
-    headers: {"Content-Type": "application/json", ...staffAuthHeaders()},
+    headers: {"Content-Type": "application/json"},
     body: JSON.stringify({messages, tools}),
   });
 

@@ -129,8 +129,7 @@
     "invalidModifierGroup": "Modifikatör grubu geçersiz",
     "duplicateDishModifierGroup": "Modifikatör grubu bu yemeğe zaten eklenmiş",
     "invalidPriority": "Öncelik geçersiz",
-    "invalidRequiredModifiers": "Zorunlu modifikatör değeri geçersiz",
-    "pinRequired": "Bu kullanıcı için 4 haneli bir PIN girin."
+    "invalidRequiredModifiers": "Zorunlu modifikatör değeri geçersiz"
   },
   "settingsDelete": {
     "deactivated": "{{entity}} kullanımda olduğu için devre dışı bırakıldı.",

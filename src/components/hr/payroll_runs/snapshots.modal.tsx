@@ -33,7 +33,7 @@ export const PayrollRunSnapshots = ({open, onClose, run}: Props) => {
     const load = async () => {
       setLoading(true);
       try {
-        const [rows] = await db.query<[PayrollSnapshot[]]>(
+        const [rows] = await db.query<PayrollSnapshot[]>(
           `SELECT * FROM ${Tables.payroll_snapshots}
            WHERE payroll_run = $runId
            FETCH employee`,

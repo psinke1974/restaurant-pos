@@ -129,8 +129,7 @@
     "invalidModifierGroup": "مجموعة المعدّلات غير صالحة",
     "duplicateDishModifierGroup": "مجموعة المعدّلات مرتبطة بالفعل بهذا الطبق",
     "invalidPriority": "الأولوية غير صالحة",
-    "invalidRequiredModifiers": "قيمة المعدّلات المطلوبة غير صالحة",
-    "pinRequired": "أدخل رمز PIN من 4 أرقام لهذا المستخدم."
+    "invalidRequiredModifiers": "قيمة المعدّلات المطلوبة غير صالحة"
   },
   "settingsDelete": {
     "deactivated": "{{entity}} قيد الاستخدام وتم تعطيله.",

@@ -129,8 +129,7 @@
     "invalidModifierGroup": "Modifier-Gruppe ist ungültig",
     "duplicateDishModifierGroup": "Modifier-Gruppe ist diesem Gericht bereits zugewiesen",
     "invalidPriority": "Priorität ist ungültig",
-    "invalidRequiredModifiers": "Wert für erforderliche Modifier ist ungültig",
-    "pinRequired": "Gib eine 4-stellige PIN für diesen Benutzer ein."
+    "invalidRequiredModifiers": "Wert für erforderliche Modifier ist ungültig"
   },
   "settingsDelete": {
     "deactivated": "{{entity}} wird verwendet und wurde deaktiviert.",
