@@ -287,7 +287,7 @@ export async function dispatchPrint<Payload = any>(
     return;
   }
 
-  let printPayload = { ...(payload as Record<string, unknown>) };
+  const printPayload = { ...(payload as Record<string, unknown>) };
   if (printPayload.order && (template === 'kitchen' || template === 'deletion')) {
     printPayload.order = await enrichOrderForPrint(db, printPayload.order as Record<string, unknown>);
   }

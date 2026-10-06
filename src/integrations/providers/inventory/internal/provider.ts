@@ -100,6 +100,7 @@ export class InternalInventoryProvider implements IntegrationProvider {
       failedJobs: 0,
       lastSynchronization: toJsDate(nowSurrealDateTime()).toISOString(),
       version: manifest.providerVersion,
+      updatedAt: toJsDate(nowSurrealDateTime()).toISOString(),
     };
   }
 

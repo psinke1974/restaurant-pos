@@ -382,7 +382,7 @@ export const SplitAmount = ({
                         <IconTooltipButton
                           variant="danger"
                           icon={faTrash}
-                         
+                          label={t('common:actions.remove')}
                           size="sm"
                           onClick={() => removeSplit(split.id)}
                         />
