@@ -315,16 +315,23 @@ docker compose up -d
 
 ### Database access
 
-The browser never gets database credentials. Staff sign in with their PIN or
-username/password through SurrealDB record access (`pos`), and every table
-grants access only to signed-in staff. This is set up by
-`migrations/2026_10_06_record_access.surql`; apply it (or run
+The browser never gets database credentials. Staff tap their name and enter
+their PIN (or use username/password) to sign in through SurrealDB record access
+(`pos`), and every table grants access only to signed-in staff. This is set up
+by `migrations/2026_10_06_record_access.surql` and
+`migrations/2026_10_06_name_pin_login.surql`; apply them (or run
 `migrations/scripts/run-prod-migrations.cjs`) on every install, and again after
-importing a schema dump. New tables must be added to that migration, otherwise
-the app sees them as empty (a unit test checks this against `Tables`).
+importing a schema dump. New tables must be added to the record access
+migration, otherwise the app sees them as empty (a unit test checks this
+against `Tables`).
 
-After 10 failed sign-ins within a minute, or 30 within 15 minutes, sign-in is
-blocked for everyone until the failures age out.
+The login screen lists staff names before anyone is signed in, so SurrealDB
+must run with `--allow-guests` (docker-compose does this). Guests can only read
+the `login_directory` view (first and last names of PIN users).
+
+A user is locked out after 5 failed sign-ins within 15 minutes, or 15 within a
+day; a successful sign-in clears the count. As a safety net, sign-in is blocked
+for everyone after 30 failures within a minute or 200 within 15 minutes.
 ---
 
 ## 🧭 Roadmap and WIP

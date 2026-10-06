@@ -323,7 +323,8 @@
     "reset": "Restablecer",
     "importDishesTitle": "Importar platos desde CSV",
     "importIngredientsTitle": "Importar ingredientes de platos desde CSV",
-    "importModifierGroupsTitle": "Importar grupos de modificadores de platos desde CSV"
+    "importModifierGroupsTitle": "Importar grupos de modificadores de platos desde CSV",
+    "pinKeepCurrent": "Déjalo vacío para mantener el PIN actual"
   },
   "dishView": {
     "detailsTitle": "Detalles del plato",

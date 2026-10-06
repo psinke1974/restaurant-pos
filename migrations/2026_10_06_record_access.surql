@@ -8,6 +8,9 @@
 -- Server-side services (payments, printing, sync, tracking, migrations) keep
 -- using the root credentials from the environment.
 --
+-- The `pos` access below is replaced by 2026_10_06_name_pin_login.surql (name +
+-- PIN sign-in with per-user lockout); always apply that file after this one.
+--
 -- Every table the app uses must grant record users access, otherwise queries
 -- from the frontend silently return nothing. When adding a table, add it to
 -- the default section below (src/api/db/__tests__/access-migration.test.ts
