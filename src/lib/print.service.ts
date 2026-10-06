@@ -1,3 +1,4 @@
+import { staffAuthHeaders } from "@/api/db/auth.ts";
 import React from "react";
 import { toast } from "sonner";
 import { getDefaultStore } from "jotai";
@@ -286,7 +287,7 @@ export async function dispatchPrint<Payload = any>(
     return;
   }
 
-  let printPayload = { ...(payload as Record<string, unknown>) };
+  const printPayload = { ...(payload as Record<string, unknown>) };
   if (printPayload.order && (template === 'kitchen' || template === 'deletion')) {
     printPayload.order = await enrichOrderForPrint(db, printPayload.order as Record<string, unknown>);
   }
@@ -312,7 +313,7 @@ export async function dispatchPrint<Payload = any>(
   try {
     const res = await fetch(url, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...staffAuthHeaders() },
       body: JSON.stringify(body),
     });
 

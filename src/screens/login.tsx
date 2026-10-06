@@ -21,9 +21,12 @@ import { ensureEmployeeForUser } from "@/lib/labor-engine/employee.resolver.ts";
 import { useTranslation } from "react-i18next";
 import i18n from "@/lib/i18n.ts";
 import { DocumentTitle } from "@/components/common/document-title.tsx";
+import { useDatabase } from "@/hooks/useDatabase.ts";
+import { TooManyAttemptsError, verifyCredentials } from "@/api/db/auth.ts";
 
 export const Login = () => {
   const db = useDB();
+  const { signIn, signOut } = useDatabase();
   const { t } = useTranslation('auth');
 
   const [code, setCode] = useState('');
@@ -54,17 +57,25 @@ export const Login = () => {
 
   const checkLogin = async (login: string, pass: string, method: 'pin'|'form') => {
     if ((method === 'pin' && login.trim().length === 4) || (method === 'form' && login.trim() && pass.trim())) {
-      const query = method === 'pin'
-        ? `SELECT * from ${Tables.users} where login = $login and deleted_at = none and (login_method = 'pin' OR login_method = NONE) and crypto::bcrypt::compare(password, $password) = true fetch user_role, user_shift`
-        : `SELECT * from ${Tables.users} where login = $login and deleted_at = none and login_method = 'form' and crypto::bcrypt::compare(password, $password) = true fetch user_role, user_shift`;
+      let loggedInUser: any;
+      try {
+        if (page.locked) {
+          // Unlocking: check the credentials on a separate connection so a
+          // wrong user can't take over this terminal's session.
+          loggedInUser = await verifyCredentials(login, pass, method);
+        } else {
+          await signIn(login, pass, method);
+          [loggedInUser] = await db.query(`SELECT * FROM ONLY $auth FETCH user_role, user_shift`);
+        }
+      } catch (e) {
+        if (e instanceof TooManyAttemptsError) {
+          toast.error(t('login.tooManyAttempts'));
+        }
+        denyLogin();
+        return false;
+      }
 
-      const record: any = await db.query(query, {
-        login: login,
-        password: pass,
-      });
-
-      if(record[0].length > 0){
-        const loggedInUser = record[0][0];
+      if(loggedInUser){
         const roleId = typeof loggedInUser.user_role === "object" ? loggedInUser.user_role?.id : loggedInUser.user_role;
         let fetchedRole: UserRole | undefined;
 
@@ -83,14 +94,14 @@ export const Login = () => {
             : getUserModules(loggedInUser),
         };
 
-        if(page.locked && page.lockedBy?.login !== record[0][0].login){
+        if(page.locked && String(page.lockedBy?.id) !== String(loggedInUser.id)){
           denyLogin();
           return false;
         }
 
         // Check for active time entry
         const timeEntryCheck: any = await db.query(`SELECT * from ${Tables.time_entries} where user = $userId and clock_out = NONE and platform = $platform`, {
-          userId: record[0][0].id,
+          userId: loggedInUser.id,
           platform: 'web'
         });
 
@@ -296,6 +307,10 @@ export const Login = () => {
             setShowClockInModal(false);
             setPendingUser(null);
             setCode('');
+            if (!page.locked) {
+              // Signed in to the database but never entered the app.
+              void signOut();
+            }
           }}
           title={t('clockIn.title')}
           shouldCloseOnOverlayClick={false}

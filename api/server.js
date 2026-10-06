@@ -14,6 +14,7 @@ const { handleError } = require('./src/lib/response');
 const { requestLogMiddleware } = require('./src/lib/request-log.middleware');
 const { modules } = require('./src/modules');
 const logger = require('./src/lib/logger');
+const { requireStaff } = require('./src/lib/require-staff');
 
 const app = express();
 const PORT = Number(process.env.API_PORT || 3140);
@@ -50,6 +51,9 @@ app.get('/health', (req, res) => {
     modules: modules.map((m) => m.name),
   });
 });
+
+// Everything below /health is for signed-in POS staff only.
+app.use(requireStaff);
 
 for (const module of modules) {
   app.use(module.basePath, module.router);

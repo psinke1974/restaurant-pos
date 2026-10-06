@@ -109,7 +109,7 @@ function useApi<T>(
     isFetching,
     error,
     refetch,
-  }: UseQueryResult<T> = useQuery({
+  }: UseQueryResult<T> = useQuery<any, Error>({
     queryKey: queryKeys,
     queryFn: fetchFilteredData,
     enabled: isConnected && !!db && !!table && enabledOverride,

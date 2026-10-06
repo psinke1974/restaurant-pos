@@ -19,7 +19,7 @@ export const ItemsVisibilityConfig = () => {
       <h3 className="mb-3">{t('settings:visibilityConfig.cart')}</h3>
       <div className="flex gap-5 flex-col mb-5">
         <Switch
-          checked={!!config.menuConfig?.showTotalInCart ?? true}
+          checked={!!config.menuConfig?.showTotalInCart}
           onChange={(event) => {
             setConfig(prev => ({
               ...prev,
@@ -37,7 +37,7 @@ export const ItemsVisibilityConfig = () => {
       <h3 className="mb-3">{t('settings:visibilityConfig.orders')}</h3>
       <div className="flex gap-5 flex-col">
         <Switch
-          checked={!!config.menuConfig?.showTotalInOrderCard ?? true}
+          checked={!!config.menuConfig?.showTotalInOrderCard}
           onChange={(event) => {
             setConfig(prev => ({
               ...prev,
@@ -52,7 +52,7 @@ export const ItemsVisibilityConfig = () => {
         </Switch>
 
         <Switch
-          checked={!!config.menuConfig?.showGroupsInOrderCard ?? true}
+          checked={!!config.menuConfig?.showGroupsInOrderCard}
           onChange={(event) => {
             setConfig(prev => ({
               ...prev,
@@ -67,7 +67,7 @@ export const ItemsVisibilityConfig = () => {
         </Switch>
 
         <Switch
-          checked={!!config.menuConfig?.showQuantityInOrderCard ?? true}
+          checked={!!config.menuConfig?.showQuantityInOrderCard}
           onChange={(event) => {
             setConfig(prev => ({
               ...prev,
@@ -82,7 +82,7 @@ export const ItemsVisibilityConfig = () => {
         </Switch>
 
         <Switch
-          checked={!!config.menuConfig?.showPriceInOrderCard ?? true}
+          checked={!!config.menuConfig?.showPriceInOrderCard}
           onChange={(event) => {
             setConfig(prev => ({
               ...prev,
@@ -97,7 +97,7 @@ export const ItemsVisibilityConfig = () => {
         </Switch>
 
         <Switch
-          checked={!!config.menuConfig?.showModifiersInOrderCard ?? true}
+          checked={!!config.menuConfig?.showModifiersInOrderCard}
           onChange={(event) => {
             setConfig(prev => ({
               ...prev,
@@ -112,7 +112,7 @@ export const ItemsVisibilityConfig = () => {
         </Switch>
 
         <Switch
-          checked={!!config.menuConfig?.showModifierPriceInOrderCard ?? true}
+          checked={!!config.menuConfig?.showModifierPriceInOrderCard}
           onChange={(event) => {
             setConfig(prev => ({
               ...prev,

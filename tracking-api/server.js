@@ -5,6 +5,7 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const trackingRoutes = require('./src/routes/tracking.routes');
+const { requireStaff } = require('./src/lib/require-staff');
 
 const app = express();
 const PORT = Number(process.env.TRACKING_PORT || 3138);
@@ -17,7 +18,7 @@ app.get('/health', (req, res) => {
   res.json({ ok: true, service: 'posr-tracking-api' });
 });
 
-app.use('/tracking', trackingRoutes);
+app.use('/tracking', requireStaff, trackingRoutes);
 
 app.use((err, req, res, next) => {
   // eslint-disable-next-line no-console

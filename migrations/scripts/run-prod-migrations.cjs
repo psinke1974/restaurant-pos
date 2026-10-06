@@ -48,7 +48,11 @@ const MIGRATION_PLAN = [
     backfill: 'backfill-location-refs.cjs',
   },
   { id: '2026_07_18_purchase_landed_cost', file: '2026_07_18_purchase_landed_cost.surql' },
-  {id: '2026_07_20_fix_purchase_extras', file: '2026_07_20.surql'}
+  {id: '2026_07_20_fix_purchase_extras', file: '2026_07_20.surql'},
+  // Per-user sign-in + table permissions. Re-apply (delete its _schema_migration
+  // row) after importing a schema dump, which resets table permissions.
+  { id: '2026_10_06_record_access', file: '2026_10_06_record_access.surql' },
+  { id: '2026_10_06_numbering', file: '2026_10_06_numbering.surql' },
 ];
 
 const rows = (result) => {

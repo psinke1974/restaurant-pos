@@ -1,3 +1,4 @@
+import { staffAuthHeaders } from "@/api/db/auth.ts";
 export const PAYMENT_SERVER_URL =
   (import.meta.env.VITE_PAYMENT_SERVER_URL as string) || "http://localhost:3133";
 
@@ -78,6 +79,7 @@ async function requestJson<T>(
     method: "POST",
     headers: {
       "Content-Type": "application/json",
+      ...staffAuthHeaders(),
       ...(options?.idempotencyKey ? { "x-idempotency-key": options.idempotencyKey } : {}),
     },
     body: JSON.stringify(payload),
@@ -145,7 +147,7 @@ export async function fetchWebhookPaymentResult(
 ): Promise<VerifyPaymentResponse | null> {
   const base = PAYMENT_CALLBACK_SERVER_URL.replace(/\/$/, "");
   const orderKey = normalizeOrderKeyForUrl(orderId);
-  const res = await fetch(`${base}/webhooks/${gateway}/${orderKey}`);
+  const res = await fetch(`${base}/webhooks/${gateway}/${orderKey}`, { headers: staffAuthHeaders() });
 
   if (res.status === 404) {
     return null;

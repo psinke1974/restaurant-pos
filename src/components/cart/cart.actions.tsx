@@ -11,6 +11,7 @@ import {MenuItemType} from "@/api/model/cart_item.ts";
 import {useTranslation} from "react-i18next";
 import {useDB} from "@/api/db/db.ts";
 import {Tables} from "@/api/db/tables.ts";
+import {Order} from "@/api/model/order.ts";
 import {toRecordId} from "@/lib/utils.ts";
 import {createStageRows} from "@/lib/kitchen/workflow.service.ts";
 import {dispatchPrint} from "@/lib/print.service.ts";
@@ -190,8 +191,8 @@ export const CartActions = () => {
             items: kitchenItems[kitchenId],
             order: {
               ...order,
-              order_type: state?.orderType ?? order?.order_type,
-              user: page?.user ?? order?.user,
+              order_type: state?.orderType ?? (order as Order | undefined)?.order_type,
+              user: page?.user ?? (order as Order | undefined)?.user,
             },
             kitchenName: k.name,
             table: state?.table,

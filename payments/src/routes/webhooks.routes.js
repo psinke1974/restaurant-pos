@@ -6,10 +6,12 @@ const {
   handleOrderWebhook,
   getWebhookResult,
 } = require('../controllers/webhooks.controller');
+const { requireStaff } = require('../lib/require-staff');
 
 const router = express.Router();
 
-router.get('/:gateway/:orderKey', getWebhookResult);
+// The POS polls this for payment results; gateways only POST.
+router.get('/:gateway/:orderKey', requireStaff, getWebhookResult);
 router.post('/:gateway/:orderKey', handleOrderWebhook);
 router.post('/:gateway', handleWebhook);
 

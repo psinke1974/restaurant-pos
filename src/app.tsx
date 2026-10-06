@@ -23,6 +23,7 @@ import {AutoClockOutProvider} from "@/providers/auto-clock-out.provider.tsx";
 import {I18nProvider} from "@/providers/i18n.provider.tsx";
 import {AppRoutes} from "@/routes/app.routes.tsx";
 import {IntegrationProvider} from "@/providers/integration.provider.tsx";
+import {SessionGate} from "@/providers/session.gate.tsx";
 
 
 // react query client wrapper
@@ -58,31 +59,42 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <ConfigProvider theme={appAntdTheme}>
         <DatabaseProvider>
-          <IntegrationProvider>
-            <AutoCheckCloseProvider>
-              <ClosingCycleEnforcementProvider>
-                <DeliveryOrdersProvider>
-                  <PrintProvider>
-                    <TableLockProvider>
-                      <SecurityProvider>
-                        <BrowserRouter>
-                          <I18nProvider>
-                            <SessionIdleProvider>
-                              <AutoClockOutProvider>
-                                <GlobalDeliveryOrderPopup/>
-                                <AppRoutes/>
-                              </AutoClockOutProvider>
-                            </SessionIdleProvider>
-                          </I18nProvider>
-                        </BrowserRouter>
-                        <SecurityModal/>
-                      </SecurityProvider>
-                    </TableLockProvider>
-                  </PrintProvider>
-                </DeliveryOrdersProvider>
-              </ClosingCycleEnforcementProvider>
-            </AutoCheckCloseProvider>
-          </IntegrationProvider>
+          <SessionGate
+            authenticated={
+              <IntegrationProvider>
+                <AutoCheckCloseProvider>
+                  <ClosingCycleEnforcementProvider>
+                    <DeliveryOrdersProvider>
+                      <PrintProvider>
+                        <TableLockProvider>
+                          <SecurityProvider>
+                            <BrowserRouter>
+                              <I18nProvider>
+                                <SessionIdleProvider>
+                                  <AutoClockOutProvider>
+                                    <GlobalDeliveryOrderPopup/>
+                                    <AppRoutes/>
+                                  </AutoClockOutProvider>
+                                </SessionIdleProvider>
+                              </I18nProvider>
+                            </BrowserRouter>
+                            <SecurityModal/>
+                          </SecurityProvider>
+                        </TableLockProvider>
+                      </PrintProvider>
+                    </DeliveryOrdersProvider>
+                  </ClosingCycleEnforcementProvider>
+                </AutoCheckCloseProvider>
+              </IntegrationProvider>
+            }
+            anonymous={
+              <BrowserRouter>
+                <I18nProvider>
+                  <AppRoutes/>
+                </I18nProvider>
+              </BrowserRouter>
+            }
+          />
 
           <Alert/>
           <Toaster richColors position="top-right" closeButton={true}/>
