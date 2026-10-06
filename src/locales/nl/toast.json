@@ -129,7 +129,8 @@
     "invalidModifierGroup": "Modifiergroep is ongeldig",
     "duplicateDishModifierGroup": "Modifiergroep is al gekoppeld aan dit gerecht",
     "invalidPriority": "Prioriteit is ongeldig",
-    "invalidRequiredModifiers": "Waarde voor verplichte modifiers is ongeldig"
+    "invalidRequiredModifiers": "Waarde voor verplichte modifiers is ongeldig",
+    "pinRequired": "Vul een PIN van 4 cijfers in voor deze gebruiker."
   },
   "settingsDelete": {
     "deactivated": "{{entity}} is in gebruik en is gedeactiveerd.",

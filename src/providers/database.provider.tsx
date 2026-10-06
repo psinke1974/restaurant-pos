@@ -24,7 +24,7 @@ export interface DatabaseProviderState {
   /** Record id of the signed-in staff member, undefined while anonymous */
   authUserId?: string;
   /** Signs the connection in as a staff member and returns their record id */
-  signIn: (login: string, password: string, method: LoginMethod) => Promise<string | undefined>;
+  signIn: (subject: string, password: string, method: LoginMethod) => Promise<string | undefined>;
   /** Drops the staff session; the connection stays open but anonymous */
   signOut: () => Promise<void>;
 }
@@ -91,9 +91,9 @@ export const DatabaseProvider: React.FC<DatabaseProviderProps> = ({
     reset();
   }, [surrealInstance, reset]);
 
-  const signIn = useCallback(async (login: string, password: string, method: LoginMethod) => {
+  const signIn = useCallback(async (subject: string, password: string, method: LoginMethod) => {
     authGeneration.current += 1;
-    const token = await signInUser(surrealInstance, login, password, method);
+    const token = await signInUser(surrealInstance, subject, password, method);
     storeToken(token);
     const userId = await fetchAuthUserId(surrealInstance);
     setAuthUserId(userId);

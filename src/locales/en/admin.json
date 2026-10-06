@@ -343,7 +343,8 @@
     "showCategoryInMenu": "Show this category in menu",
     "importDishesTitle": "Import dishes from CSV",
     "importIngredientsTitle": "Import dish ingredients from CSV",
-    "importModifierGroupsTitle": "Import dish modifier groups from CSV"
+    "importModifierGroupsTitle": "Import dish modifier groups from CSV",
+    "pinKeepCurrent": "Leave empty to keep the current PIN"
   },
   "dishView": {
     "detailsTitle": "Dish details",

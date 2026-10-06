@@ -323,7 +323,8 @@
     "reset": "Ripristina",
     "importDishesTitle": "Importa piatti da CSV",
     "importIngredientsTitle": "Importa ingredienti dei piatti da CSV",
-    "importModifierGroupsTitle": "Importa gruppi modificatori dei piatti da CSV"
+    "importModifierGroupsTitle": "Importa gruppi modificatori dei piatti da CSV",
+    "pinKeepCurrent": "Lascia vuoto per mantenere il PIN attuale"
   },
   "dishView": {
     "detailsTitle": "Dettagli piatto",

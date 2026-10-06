@@ -53,6 +53,7 @@ const MIGRATION_PLAN = [
   // row) after importing a schema dump, which resets table permissions.
   { id: '2026_10_06_record_access', file: '2026_10_06_record_access.surql' },
   { id: '2026_10_06_numbering', file: '2026_10_06_numbering.surql' },
+  { id: '2026_10_06_name_pin_login', file: '2026_10_06_name_pin_login.surql' },
 ];
 
 const rows = (result) => {

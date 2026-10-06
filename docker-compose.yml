@@ -27,7 +27,7 @@ services:
     working_dir: /
     user: "0:0"
     command: >
-      start --user ${SURREAL_USER:-root} --pass ${SURREAL_PASS:?Set SURREAL_PASS in .env} surrealkv://database --bind 0.0.0.0:8000
+      start --user ${SURREAL_USER:-root} --pass ${SURREAL_PASS:?Set SURREAL_PASS in .env} --allow-guests surrealkv://database --bind 0.0.0.0:8000
     ports:
       - "8000:8000"
     volumes:
